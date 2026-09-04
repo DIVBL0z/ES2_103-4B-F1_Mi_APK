@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Contenedor principal: ConstraintLayout
+    Permite posicionar los elementos en la pantalla mediante restricciones (constraints)
+    relativas a los bordes de la pantalla (parent) o a otros elementos adyacentes.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,6 +12,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <!-- 1. Logo institucional centrado horizontalmente en la parte superior -->
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="156dp"
@@ -18,6 +24,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- 2. Título de la pantalla: 'Iniciar sesión' -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
@@ -30,6 +37,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
+    <!-- 3. Campo de entrada para el nombre de usuario (EditText) -->
     <EditText
         android:id="@+id/edtUsuario"
         android:layout_width="0dp"
@@ -44,6 +52,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
+    <!-- 4. Campo de entrada para la contraseña (EditText con tipo textPassword para ocultar caracteres) -->
     <EditText
         android:id="@+id/edtPassword"
         android:layout_width="0dp"
@@ -54,10 +63,25 @@
         android:hint="Contraseña"
         android:inputType="textPassword"
         android:minHeight="48dp"
+        android:paddingEnd="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtUsuario" />
 
+    <!-- Botón con icono para alternar la visibilidad de la contraseña -->
+    <ImageButton
+        android:id="@+id/btnMostrarPassword"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="4dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Mostrar u ocultar contraseña"
+        android:src="@drawable/ic_visibility_24"
+        app:layout_constraintBottom_toBottomOf="@+id/edtPassword"
+        app:layout_constraintEnd_toEndOf="@+id/edtPassword"
+        app:layout_constraintTop_toTopOf="@+id/edtPassword" />
+
+    <!-- 5. Casilla de verificación 'Recordarme' (CheckBox) -->
     <CheckBox
         android:id="@+id/chkRecordarme"
         android:layout_width="wrap_content"
@@ -68,6 +92,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtPassword" />
 
+    <!-- 6. Botón principal: 'Ingresar' con android:onClick="onIngresarClick" -->
     <Button
         android:id="@+id/btnIngresar"
         android:layout_width="0dp"
@@ -75,9 +100,24 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
+        android:onClick="onIngresarClick"
         android:text="Ingresar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/chkRecordarme" />
+
+    <!-- 7. Botón secundario: 'Limpiar' con android:onClick="onLimpiarClick" -->
+    <Button
+        android:id="@+id/btnLimpiar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:onClick="onLimpiarClick"
+        android:text="Limpiar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnIngresar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

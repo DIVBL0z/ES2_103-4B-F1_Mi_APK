@@ -21,6 +21,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Declaración de la pantalla de bienvenida BienvenidaActivity -->
+        <activity
+            android:name=".BienvenidaActivity"
+            android:exported="false" />
+
+        <!-- Declaración de la pantalla de preferencias PreferenciasActivity -->
+        <activity
+            android:name=".PreferenciasActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

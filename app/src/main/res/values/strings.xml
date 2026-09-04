@@ -1,3 +1,12 @@
 <resources>
+    <!-- Nombre de la aplicación -->
     <string name="app_name">FirstApp</string>
+
+    <!-- Arreglo de cadenas que contiene los idiomas disponibles para la aplicación -->
+    <string-array name="idiomas">
+        <!-- Opción para idioma Español -->
+        <item>Español</item>
+        <!-- Opción para idioma Inglés -->
+        <item>Inglés</item>
+    </string-array>
 </resources>

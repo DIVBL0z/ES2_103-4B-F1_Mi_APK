@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Contenedor principal de la pantalla de preferencias utilizando ConstraintLayout -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainPreferencias"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PreferenciasActivity">
+
+    <!-- 1. Título principal de la pantalla de preferencias -->
+    <TextView
+        android:id="@+id/tvTituloPreferencias"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:text="Preferencias"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 2. Subtítulo que muestra el usuario conectado recibido por Intent -->
+    <TextView
+        android:id="@+id/tvUsuarioPreferencias"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTituloPreferencias" />
+
+    <!-- 3. Contenedor LinearLayout vertical debajo del título a ancho completo -->
+    <LinearLayout
+        android:id="@+id/layoutPreferencias"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvUsuarioPreferencias">
+
+        <!-- 4. Switch para activar o desactivar la recepción de notificaciones -->
+        <Switch
+            android:id="@+id/swNotificaciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Recibir notificaciones" />
+
+        <!-- 5. Selector desplegable (Spinner) para configurar el idioma de la aplicación -->
+        <Spinner
+            android:id="@+id/spIdioma"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:entries="@array/idiomas"
+            android:minHeight="48dp" />
+
+        <!-- 6. Grupo de botones de radio para seleccionar la unidad de temperatura -->
+        <RadioGroup
+            android:id="@+id/rgUnidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <!-- Opción para seleccionar grados Celsius (marcada por defecto) -->
+            <RadioButton
+                android:id="@+id/rbCelsius"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:minHeight="48dp"
+                android:text="Celsius" />
+
+            <!-- Opción para seleccionar grados Fahrenheit -->
+            <RadioButton
+                android:id="@+id/rbFahrenheit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:minHeight="48dp"
+                android:text="Fahrenheit" />
+
+        </RadioGroup>
+
+        <!-- 7. Barra de progreso pequeña inicialmente oculta -->
+        <ProgressBar
+            android:id="@+id/pbGuardando"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+        <!-- 8. Botón para guardar la preferencia seleccionada -->
+        <Button
+            android:id="@+id/btnGuardarPreferencia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:onClick="onGuardarPreferenciaClick"
+            android:text="Guardar" />
+
+    </LinearLayout>
+
+    <!-- 9. Botón para volver a la pantalla anterior -->
+    <Button
+        android:id="@+id/btnVolver"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="Volver"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutPreferencias" />
+
+    <!-- 10. Botón para cerrar sesión y regresar directamente a la pantalla de login -->
+    <Button
+        android:id="@+id/btnCerrarSesion"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:onClick="onCerrarSesionClick"
+        android:text="Cerrar sesión"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnVolver" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
