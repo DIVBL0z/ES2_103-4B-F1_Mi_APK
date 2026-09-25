@@ -1,109 +1,173 @@
 package com.example.firstapp
 
-// Importación para crear intenciones de navegación entre actividades
+// Importaciones para navegación y ciclo de vida de actividades
 import android.content.Intent
-// Importación para el manejo del estado guardado de la actividad
 import android.os.Bundle
-// Importación de Handler para programar tareas diferidas en el hilo principal
-import android.os.Handler
-// Importación de Looper para obtener la cola de mensajes del hilo principal
-import android.os.Looper
-// Importación de la clase View necesaria para los métodos vinculados a onClick(view: View)
 import android.view.View
-// Importación del componente Button para interactuar con botones
 import android.widget.Button
-// Importación del componente ProgressBar para la barra de progreso
 import android.widget.ProgressBar
-// Importación del componente RadioButton para leer la opción seleccionada
 import android.widget.RadioButton
-// Importación del componente RadioGroup para gestionar el grupo de opciones
 import android.widget.RadioGroup
-// Importación del componente TextView para mostrar información en pantalla
+import android.widget.Spinner
+import android.widget.Switch
 import android.widget.TextView
-// Importación de Toast para desplegar notificaciones flotantes breves
 import android.widget.Toast
-// Importación para habilitar el diseño de pantalla completa borde a borde
+// Importaciones de compatibilidad y diseño
 import androidx.activity.enableEdgeToEdge
-// Importación de la clase base compatible AppCompatActivity
 import androidx.appcompat.app.AppCompatActivity
-// Importación de utilidades para compatibilidad de vistas
 import androidx.core.view.ViewCompat
-// Importación para gestionar las barras del sistema (insets)
 import androidx.core.view.WindowInsetsCompat
+// Importaciones de Firebase Auth y Cloud Firestore
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-// Definición de la clase PreferenciasActivity que hereda de AppCompatActivity
+/**
+ * Pantalla de configuración y preferencias del usuario.
+ * Sincroniza las preferencias del usuario (notificaciones, idioma, unidad de temperatura)
+ * bidireccionalmente con su documento en Cloud Firestore (/usuarios/{uid}).
+ */
 class PreferenciasActivity : AppCompatActivity() {
 
-    // Método del ciclo de vida que se ejecuta al crearse la actividad
+    // Vistas de la interfaz
+    private lateinit var tvUsuarioPreferencias: TextView
+    private lateinit var swNotificaciones: Switch
+    private lateinit var spIdioma: Spinner
+    private lateinit var rgUnidad: RadioGroup
+    private lateinit var pbGuardando: ProgressBar
+    private lateinit var btnGuardarPreferencia: Button
+    private lateinit var btnVolver: Button
+    private lateinit var btnCerrarSesion: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Llama al método onCreate de la clase base
         super.onCreate(savedInstanceState)
-        // Habilita la visualización de borde a borde en la pantalla
         enableEdgeToEdge()
-        // Asocia el archivo de diseño activity_preferencias.xml con esta actividad
         setContentView(R.layout.activity_preferencias)
 
-        // Configura el ajuste de márgenes según las barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainPreferencias)) { v, insets ->
-            // Obtiene las dimensiones de las barras del sistema
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Aplica el relleno a la vista principal para no solapar el contenido
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            // Retorna las inserciones procesadas
             insets
         }
 
-        // Obtiene el usuario transferido desde BienvenidaActivity a través del Intent
         val usuario = intent.getStringExtra("EXTRA_USUARIO") ?: "Usuario"
 
-        // Obtiene la referencia del TextView que muestra el usuario
-        val tvUsuarioPreferencias = findViewById<TextView>(R.id.tvUsuarioPreferencias)
-        // Muestra el correo o usuario actual en el TextView
+        tvUsuarioPreferencias = findViewById(R.id.tvUsuarioPreferencias)
         tvUsuarioPreferencias.text = "Configuración para: $usuario"
 
-        // Obtiene la referencia del botón para volver
-        val btnVolver = findViewById<Button>(R.id.btnVolver)
-        // Asigna el evento de clic al botón volver
+        swNotificaciones = findViewById(R.id.swNotificaciones)
+        spIdioma = findViewById(R.id.spIdioma)
+        rgUnidad = findViewById(R.id.rgUnidad)
+        pbGuardando = findViewById(R.id.pbGuardando)
+        btnGuardarPreferencia = findViewById(R.id.btnGuardarPreferencia)
+        btnVolver = findViewById(R.id.btnVolver)
+        btnCerrarSesion = findViewById(R.id.btnCerrarSesion)
+
         btnVolver.setOnClickListener {
-            // Finaliza esta actividad y regresa a BienvenidaActivity
             finish()
+        }
+
+        // Carga las preferencias guardadas desde Cloud Firestore
+        cargarPreferenciasFirestore()
+    }
+
+    /**
+     * Lee las preferencias actuales del usuario en Cloud Firestore y las refleja en la UI.
+     */
+    private fun cargarPreferenciasFirestore() {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("usuarios").document(currentUser.uid).get()
+            .addOnSuccessListener { doc ->
+                if (doc != null && doc.exists()) {
+                    @Suppress("UNCHECKED_CAST")
+                    val prefs = doc.get("preferencias") as? Map<String, Any>
+                    if (prefs != null) {
+                        val notif = prefs["notificaciones"] as? Boolean ?: true
+                        val idioma = prefs["idioma"] as? String ?: "Español"
+                        val unidad = prefs["unidadTemperatura"] as? String ?: "Celsius"
+
+                        swNotificaciones.isChecked = notif
+
+                        if (unidad.equals("Fahrenheit", ignoreCase = true)) {
+                            findViewById<RadioButton>(R.id.rbFahrenheit)?.isChecked = true
+                        } else {
+                            findViewById<RadioButton>(R.id.rbCelsius)?.isChecked = true
+                        }
+
+                        val adapter = spIdioma.adapter
+                        for (i in 0 until adapter.count) {
+                            if (adapter.getItem(i).toString().equals(idioma, ignoreCase = true)) {
+                                spIdioma.setSelection(i)
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+    }
+
+    /**
+     * Guarda las preferencias seleccionadas en Cloud Firestore (/usuarios/{uid}).
+     */
+    fun onGuardarPreferenciaClick(view: View) {
+        pbGuardando.visibility = View.VISIBLE
+        btnGuardarPreferencia.isEnabled = false
+
+        val notificaciones = swNotificaciones.isChecked
+        val idioma = spIdioma.selectedItem?.toString() ?: "Español"
+        val idSeleccionado = rgUnidad.checkedRadioButtonId
+        val rbSeleccionado = findViewById<RadioButton>(idSeleccionado)
+        val unidad = rbSeleccionado?.text?.toString() ?: "Celsius"
+
+        val prefsMap = mapOf(
+            "notificaciones" to notificaciones,
+            "idioma" to idioma,
+            "unidadTemperatura" to unidad
+        )
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("usuarios").document(currentUser.uid)
+                .update("preferencias", prefsMap)
+                .addOnSuccessListener {
+                    pbGuardando.visibility = View.GONE
+                    btnGuardarPreferencia.isEnabled = true
+                    Toast.makeText(
+                        this,
+                        "Preferencias guardadas en la nube ($unidad, $idioma)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .addOnFailureListener { e ->
+                    pbGuardando.visibility = View.GONE
+                    btnGuardarPreferencia.isEnabled = true
+                    Toast.makeText(
+                        this,
+                        "Error al guardar preferencias: ${e.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+        } else {
+            pbGuardando.visibility = View.GONE
+            btnGuardarPreferencia.isEnabled = true
+            Toast.makeText(this, "Unidad guardada localmente: $unidad", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Método vinculado al atributo android:onClick="onGuardarPreferenciaClick" del botón Guardar
-    fun onGuardarPreferenciaClick(view: View) {
-        // Obtiene la referencia a la barra de progreso pbGuardando por su ID
-        val pbGuardando = findViewById<ProgressBar>(R.id.pbGuardando)
-        // Muestra la barra de progreso en pantalla haciéndola visible
-        pbGuardando.visibility = View.VISIBLE
-
-        // Obtiene la referencia al grupo de botones de radio por su ID
-        val rgUnidad = findViewById<RadioGroup>(R.id.rgUnidad)
-        // Obtiene el identificador del RadioButton que se encuentra seleccionado
-        val idSeleccionado = rgUnidad.checkedRadioButtonId
-        // Busca el RadioButton correspondiente al ID seleccionado
-        val rbSeleccionado = findViewById<RadioButton>(idSeleccionado)
-        // Extrae el texto de la unidad elegida ('Celsius' o 'Fahrenheit')
-        val unidad = rbSeleccionado?.text?.toString() ?: "Celsius"
-
-        // Programa la ejecución diferida de una tarea en el hilo principal tras 1000 milisegundos (1 segundo)
-        Handler(Looper.getMainLooper()).postDelayed({
-            // Oculta la barra de progreso transcurrido 1 segundo
-            pbGuardando.visibility = View.GONE
-            // Despliega una notificación Toast confirmando la unidad seleccionada
-            Toast.makeText(this, "Unidad guardada: $unidad", Toast.LENGTH_SHORT).show()
-        }, 1000)
-    }
-
-    // Método vinculado al atributo android:onClick="onCerrarSesionClick" del botón Cerrar sesión
+    /**
+     * Cierra la sesión en Firebase Authentication y redirige a MainActivity.
+     */
     fun onCerrarSesionClick(view: View) {
-        // Crea una intención para navegar a la pantalla de login (MainActivity)
+        FirebaseAuth.getInstance().signOut()
+
+        val prefs = getSharedPreferences("IoT_Prefs", MODE_PRIVATE)
+        prefs.edit().putBoolean("recordarme", false).apply()
+
         val intent = Intent(this, MainActivity::class.java)
-        // Configura las banderas para limpiar la pila de tareas y crear una nueva
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        // Inicia la actividad MainActivity dejando la pantalla de login limpia
         startActivity(intent)
-        // Finaliza la actividad actual
         finish()
     }
 }

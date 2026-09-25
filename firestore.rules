@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: usuarios
+    // Document ID: {userId} (matches Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required, immutable)
+    //   - correo: string (required, valid email)
+    //   - nombreCompleto: string (required, 2-100 chars)
+    //   - rut: string (optional, max 20 chars)
+    //   - telefono: string (optional, max 25 chars)
+    //   - rol: string (required, enum: 'administrador', 'tecnico', 'usuario')
+    //   - fechaRegistro: timestamp (optional)
+    //   - activo: bool (required)
+    //   - preferencias: map (optional)
+    //
+    // ===============================================================
+
+    // Verifica que el usuario se encuentre autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica que el usuario autenticado sea el dueño del documento
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Validación de formato de correo electrónico
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // Validación del esquema y tipos de datos del documento de usuario
+    function isValidUsuario(data) {
+      return data.keys().hasAll(['uid', 'correo', 'nombreCompleto', 'rol', 'activo']) &&
+        data.uid is string && data.uid.size() > 0 &&
+        data.correo is string && isValidEmail(data.correo) &&
+        data.nombreCompleto is string && data.nombreCompleto.size() >= 2 && data.nombreCompleto.size() <= 100 &&
+        data.rol in ['administrador', 'tecnico', 'usuario'] &&
+        data.activo is bool &&
+        (!('rut' in data) || (data.rut is string && data.rut.size() <= 20)) &&
+        (!('telefono' in data) || (data.telefono is string && data.telefono.size() <= 25)) &&
+        (!('fechaRegistro' in data) || (data.fechaRegistro is timestamp)) &&
+        (!('preferencias' in data) || (data.preferencias is map));
+    }
+
+    match /usuarios/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) &&
+                       isValidUsuario(request.resource.data) &&
+                       request.resource.data.uid == request.auth.uid;
+      allow update: if isOwner(userId) &&
+                       isValidUsuario(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid;
+      allow delete: if false;
+    }
+  }
+}

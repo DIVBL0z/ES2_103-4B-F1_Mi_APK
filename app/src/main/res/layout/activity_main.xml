@@ -37,7 +37,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
-    <!-- 3. Campo de entrada para el nombre de usuario (EditText) -->
+    <!-- 3. Campo de entrada para el correo electrónico del usuario (EditText) -->
     <EditText
         android:id="@+id/edtUsuario"
         android:layout_width="0dp"
@@ -45,8 +45,8 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
-        android:hint="Usuario"
-        android:inputType="text"
+        android:hint="Correo electrónico"
+        android:inputType="textEmailAddress"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,32 +92,60 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtPassword" />
 
+    <!-- Barra de progreso para operaciones de autenticación con Firebase -->
+    <ProgressBar
+        android:id="@+id/pbCargando"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chkRecordarme" />
+
     <!-- 6. Botón principal: 'Ingresar' con android:onClick="onIngresarClick" -->
     <Button
         android:id="@+id/btnIngresar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="24dp"
         android:onClick="onIngresarClick"
         android:text="Ingresar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chkRecordarme" />
+        app:layout_constraintTop_toBottomOf="@+id/pbCargando" />
 
-    <!-- 7. Botón secundario: 'Limpiar' con android:onClick="onLimpiarClick" -->
+    <!-- 7. Botón secundario: 'Registrarse con Firebase' con android:onClick="onRegistrarClick" -->
     <Button
-        android:id="@+id/btnLimpiar"
+        android:id="@+id/btnRegistrar"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:onClick="onRegistrarClick"
+        android:text="Registrarse con Firebase"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnIngresar" />
+
+    <!-- 8. Botón terciario: 'Limpiar' con android:onClick="onLimpiarClick" -->
+    <Button
+        android:id="@+id/btnLimpiar"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="24dp"
         android:onClick="onLimpiarClick"
         android:text="Limpiar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnIngresar" />
+        app:layout_constraintTop_toBottomOf="@+id/btnRegistrar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

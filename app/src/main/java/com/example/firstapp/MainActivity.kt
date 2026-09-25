@@ -1,9 +1,9 @@
 package com.example.firstapp
 
+// Importación para crear intenciones de navegación entre actividades
+import android.content.Intent
 // Importación para el manejo del estado guardado de la actividad
 import android.os.Bundle
-// Importación de Intent para navegar entre diferentes pantallas (Activities)
-import android.content.Intent
 // Importación de métodos de transformación para mostrar u ocultar contraseñas
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
@@ -11,29 +11,35 @@ import android.text.method.PasswordTransformationMethod
 import android.util.Patterns
 // Importación de la clase View necesaria para los métodos vinculados a onClick(view: View)
 import android.view.View
-// Importación del componente Button para interactuar con botones
+// Importación de componentes de la interfaz de usuario
 import android.widget.Button
-// Importación del componente CheckBox para la casilla de verificación
 import android.widget.CheckBox
-// Importación del componente EditText para los campos de entrada de texto
 import android.widget.EditText
-// Importación del componente ImageButton para botones con iconos gráficos
 import android.widget.ImageButton
-// Importación de Toast para desplegar notificaciones flotantes breves
+import android.widget.ProgressBar
 import android.widget.Toast
-// Importación para habilitar el diseño de pantalla completa borde a borde
+// Importaciones de compatibilidad y diseño moderno de Android
 import androidx.activity.enableEdgeToEdge
-// Importación de AppCompatActivity para asegurar compatibilidad entre versiones de Android
 import androidx.appcompat.app.AppCompatActivity
-// Importación de ViewCompat para manejo compatible de vistas
 import androidx.core.view.ViewCompat
-// Importación de WindowInsetsCompat para manejar las barras del sistema
 import androidx.core.view.WindowInsetsCompat
+// Importaciones del SDK oficial de Firebase Authentication
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 
-// Definición de la clase MainActivity que hereda de AppCompatActivity
+/**
+ * Actividad principal de inicio de sesión y registro de usuarios,
+ * integrada con el servicio backend de Firebase Authentication.
+ */
 class MainActivity : AppCompatActivity() {
 
-    // Variable global para acceder al campo de texto de usuario
+    // Instancia principal del servicio de Firebase Authentication
+    private lateinit var auth: FirebaseAuth
+
+    // Variable global para acceder al campo de texto de usuario/correo
     private lateinit var edtUsuario: EditText
     // Variable global para acceder al campo de texto de contraseña
     private lateinit var edtPassword: EditText
@@ -43,157 +49,232 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chkRecordarme: CheckBox
     // Variable global para acceder al botón de ingresar
     private lateinit var btnIngresar: Button
+    // Variable global para acceder al botón de registrarse con Firebase
+    private lateinit var btnRegistrar: Button
+    // Variable global para acceder al botón de limpiar
+    private lateinit var btnLimpiar: Button
+    // Variable global para acceder al indicador de carga circular
+    private lateinit var pbCargando: ProgressBar
+
     // Variable booleana que almacena el estado de visibilidad de la contraseña
     private var isPasswordVisible: Boolean = false
-    // Variable entera a nivel de clase para contabilizar los intentos fallidos, inicializada en 0
+    // Variable entera para contabilizar los intentos fallidos de autenticación
     private var intentosFallidos: Int = 0
 
-    // Método del ciclo de vida que se ejecuta al crearse la actividad
+    // Constante para el nombre de las preferencias compartidas
+    private val PREFS_NAME = "IoT_Prefs"
+    private val KEY_RECORDARME = "recordarme"
+    private val KEY_EMAIL_GUARDADO = "email_guardado"
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Llama al método onCreate de la clase base
         super.onCreate(savedInstanceState)
         // Habilita la visualización de borde a borde en la pantalla
         enableEdgeToEdge()
-        // Asocia el archivo de diseño activity_main.xml a esta actividad
         setContentView(R.layout.activity_main)
 
-        // Configura un listener para ajustar márgenes según las barras de estado y navegación
+        // Configura un listener para ajustar márgenes según las barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            // Obtiene las dimensiones de las barras del sistema
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Aplica el relleno a la vista principal para evitar solapamiento
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            // Retorna las inserciones procesadas
             insets
         }
 
-        // Obtiene la referencia del campo de texto de usuario por su ID
+        // Inicialización de la instancia de Firebase Authentication
+        auth = FirebaseAuth.getInstance()
+
+        // Vinculación de los elementos de la interfaz por sus IDs
         edtUsuario = findViewById(R.id.edtUsuario)
-        // Obtiene la referencia del campo de texto de contraseña por su ID
         edtPassword = findViewById(R.id.edtPassword)
-        // Obtiene la referencia del ImageButton para mostrar contraseña por su ID
         btnMostrarPassword = findViewById(R.id.btnMostrarPassword)
-        // Obtiene la referencia de la casilla de verificación por su ID
         chkRecordarme = findViewById(R.id.chkRecordarme)
-        // Obtiene la referencia del botón ingresar por su ID
         btnIngresar = findViewById(R.id.btnIngresar)
+        btnRegistrar = findViewById(R.id.btnRegistrar)
+        btnLimpiar = findViewById(R.id.btnLimpiar)
+        pbCargando = findViewById(R.id.pbCargando)
 
         // Asigna el evento de clic al botón de mostrar u ocultar contraseña
         btnMostrarPassword.setOnClickListener {
-            // Invoca la función booleana para alternar la visibilidad de la contraseña
             alternarVisibilidadPassword()
         }
 
-        // Asigna el evento de clic al botón ingresar
+        // Asigna los eventos de clic a los botones de acción
         btnIngresar.setOnClickListener {
-            // Llama a la función onIngresarClick pasando la vista del botón
             onIngresarClick(it)
+        }
+
+        btnRegistrar.setOnClickListener {
+            onRegistrarClick(it)
+        }
+
+        btnLimpiar.setOnClickListener {
+            onLimpiarClick(it)
         }
     }
 
     /**
-     * Función booleana que muestra u oculta el texto de la contraseña
-     * @param mostrar Parámetro booleano opcional; por defecto invierte el valor actual
-     * @return Retorna true si la contraseña queda visible, o false si queda oculta
+     * Al iniciar la actividad se verifica si existe una sesión activa y si el usuario
+     * tenía seleccionada la opción de recordar sesión.
+     */
+    override fun onStart() {
+        super.onStart()
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val recordarme = prefs.getBoolean(KEY_RECORDARME, false)
+        val currentUser = auth.currentUser
+
+        if (currentUser != null && recordarme) {
+            // Usuario con sesión activa en Firebase y opción de recordarme activada
+            irABienvenida(currentUser.email ?: "Usuario")
+        } else if (recordarme) {
+            // Prellenar campo con el último correo recordado
+            val emailGuardado = prefs.getString(KEY_EMAIL_GUARDADO, "")
+            if (!emailGuardado.isNullOrEmpty()) {
+                edtUsuario.setText(emailGuardado)
+                chkRecordarme.isChecked = true
+            }
+        }
+    }
+
+    /**
+     * Alterna la visibilidad del texto de la contraseña entre texto plano y caracteres ocultos.
      */
     private fun alternarVisibilidadPassword(mostrar: Boolean = !isPasswordVisible): Boolean {
-        // Asigna el nuevo valor booleano a la variable de estado
         isPasswordVisible = mostrar
 
-        // Evalúa la condición booleana para mostrar u ocultar
         if (isPasswordVisible) {
-            // Muestra los caracteres de la contraseña en texto plano
             edtPassword.transformationMethod = HideReturnsTransformationMethod.getInstance()
-            // Cambia el icono al de ocultar contraseña (ojo tachado)
             btnMostrarPassword.setImageResource(R.drawable.ic_visibility_off_24)
         } else {
-            // Oculta los caracteres de la contraseña usando puntos
             edtPassword.transformationMethod = PasswordTransformationMethod.getInstance()
-            // Restablece el icono original (ojo normal)
             btnMostrarPassword.setImageResource(R.drawable.ic_visibility_24)
         }
 
-        // Mantiene el cursor ubicado al final del texto ingresado
         edtPassword.setSelection(edtPassword.text.length)
-
-        // Retorna el estado booleano de visibilidad resultante
         return isPasswordVisible
     }
 
-    // Método que se ejecuta al presionar el botón Ingresar mediante android:onClick="onIngresarClick"
-    fun onIngresarClick(view: View) {
-        // Lee el texto del usuario y elimina espacios en blanco al inicio y final
-        val usuario = edtUsuario.text.toString().trim()
-        // Lee la contraseña ingresada y elimina espacios en blanco al inicio y final
-        val password = edtPassword.text.toString().trim()
-        // Obtiene si la casilla recordarme está seleccionada (true) o no (false)
-        val recordarme = chkRecordarme.isChecked
-        // Variable booleana bandera para indicar si el formulario cumple todas las validaciones
+    /**
+     * Valida los campos de correo y contraseña devolviendo true si cumplen con los requisitos.
+     */
+    private fun validarCampos(usuario: String, password: String): Boolean {
         var esValido = true
 
-        // Valida si el campo de usuario se encuentra vacío
         if (usuario.isEmpty()) {
-            // Asigna un mensaje de error directo en el campo de usuario
-            edtUsuario.error = "El usuario no puede estar vacío"
-            // Marca la validación como no superada
+            edtUsuario.error = "El correo no puede estar vacío"
             esValido = false
-        // Valida si el formato del correo electrónico no cumple el estándar usando Patterns.EMAIL_ADDRESS
         } else if (!Patterns.EMAIL_ADDRESS.matcher(usuario).matches()) {
-            // Asigna un mensaje de error indicando formato de correo electrónico inválido
-            edtUsuario.error = "Ingresa un correo electrónico válido"
-            // Marca la validación como no superada
+            edtUsuario.error = "Ingresa un correo electrónico válido (ej: usuario@correo.com)"
             esValido = false
         } else {
-            // Elimina cualquier mensaje de error previo si el campo es correcto
             edtUsuario.error = null
         }
 
-        // Valida si el campo de contraseña se encuentra vacío
         if (password.isEmpty()) {
-            // Asigna un mensaje de error directo en el campo de contraseña
             edtPassword.error = "La contraseña no puede estar vacía"
-            // Marca la validación como no superada
             esValido = false
-        // Valida si la longitud de la contraseña es menor a los 6 caracteres requeridos
         } else if (password.length < 6) {
-            // Asigna un mensaje de error indicando la cantidad mínima de caracteres
             edtPassword.error = "La contraseña debe tener al menos 6 caracteres"
-            // Marca la validación como no superada
             esValido = false
         } else {
-            // Elimina cualquier mensaje de error previo si el campo es correcto
             edtPassword.error = null
         }
 
-        // Comprueba si alguna de las validaciones anteriores falló
-        if (!esValido) {
-            // Suma 1 al contador de intentos fallidos antes de terminar el proceso
+        return esValido
+    }
+
+    /**
+     * Habilita o deshabilita los controles del formulario y conmuta la visibilidad
+     * de la barra de progreso mientras se procesa la petición en Firebase.
+     */
+    private fun setCargando(cargando: Boolean) {
+        pbCargando.visibility = if (cargando) View.VISIBLE else View.GONE
+        btnIngresar.isEnabled = !cargando
+        btnRegistrar.isEnabled = !cargando
+        btnLimpiar.isEnabled = !cargando
+        edtUsuario.isEnabled = !cargando
+        edtPassword.isEnabled = !cargando
+        chkRecordarme.isEnabled = !cargando
+    }
+
+    /**
+     * Inicia sesión con Firebase Authentication utilizando correo y contraseña.
+     */
+    fun onIngresarClick(view: View) {
+        val usuario = edtUsuario.text.toString().trim()
+        val password = edtPassword.text.toString().trim()
+        val recordarme = chkRecordarme.isChecked
+
+        if (!validarCampos(usuario, password)) {
             intentosFallidos++
-        } else {
-            // Reinicia el contador de intentos fallidos al superar exitosamente las validaciones
-            intentosFallidos = 0
-            // Crea un Intent explícito para navegar hacia la nueva pantalla de bienvenida (BienvenidaActivity)
-            val intent = Intent(this, BienvenidaActivity::class.java)
-            // Adjunta el nombre del usuario ingresado como dato extra para mostrarlo en la nueva pantalla
-            intent.putExtra("EXTRA_USUARIO", usuario)
-            // Inicia la nueva actividad mostrando la pantalla de bienvenida
-            startActivity(intent)
+            return
+        }
+
+        setCargando(true)
+
+        // Llamada asíncrona a Firebase Auth para iniciar sesión
+        auth.signInWithEmailAndPassword(usuario, password)
+            .addOnCompleteListener(this) { task ->
+                setCargando(false)
+                if (task.isSuccessful) {
+                    intentosFallidos = 0
+                    guardarPreferenciaRecordarme(recordarme, usuario)
+
+                    val user = auth.currentUser
+                    Toast.makeText(this, "¡Inicio de sesión exitoso!", Toast.LENGTH_SHORT).show()
+                    irABienvenida(user?.email ?: usuario)
+                } else {
+                    intentosFallidos++
+                    val exception = task.exception
+                    val mensaje = when (exception) {
+                        is FirebaseAuthInvalidUserException -> "No existe una cuenta registrada con este correo"
+                        is FirebaseAuthInvalidCredentialsException -> "Contraseña o credenciales incorrectas"
+                        else -> "Error de autenticación: ${exception?.localizedMessage ?: "Verifique su conexión"}"
+                    }
+                    Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
+    /**
+     * Abre la pantalla de RegistroActivity para crear una cuenta con perfil completo en Firestore.
+     */
+    fun onRegistrarClick(view: View) {
+        val intent = Intent(this, RegistroActivity::class.java)
+        startActivity(intent)
+    }
+
+    /**
+     * Almacena o limpia la preferencia de 'recordarme' en SharedPreferences.
+     */
+    private fun guardarPreferenciaRecordarme(recordarme: Boolean, correo: String) {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        prefs.edit().apply {
+            putBoolean(KEY_RECORDARME, recordarme)
+            putString(KEY_EMAIL_GUARDADO, if (recordarme) correo else "")
+            apply()
         }
     }
 
-    // Método que se ejecuta al presionar el botón Limpiar mediante android:onClick="onLimpiarClick"
+    /**
+     * Navega a la pantalla BienvenidaActivity transfiriendo el correo como extra.
+     */
+    private fun irABienvenida(correo: String) {
+        val intent = Intent(this, BienvenidaActivity::class.java)
+        intent.putExtra("EXTRA_USUARIO", correo)
+        startActivity(intent)
+    }
+
+    /**
+     * Limpia los campos de texto, mensajes de error y desmarca la casilla de recordarme.
+     */
     fun onLimpiarClick(view: View) {
-        // Vacía el campo de texto del usuario
         edtUsuario.text.clear()
-        // Vacía el campo de texto de la contraseña
         edtPassword.text.clear()
-        // Limpia el mensaje de error del campo de usuario si existía
         edtUsuario.error = null
-        // Limpia el mensaje de error del campo de contraseña si existía
         edtPassword.error = null
-        // Desmarca la casilla de verificación recordarme
         chkRecordarme.isChecked = false
-        // Restablece la visibilidad de la contraseña a oculta mediante la función booleana
         alternarVisibilidadPassword(false)
+
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        prefs.edit().clear().apply()
     }
 }

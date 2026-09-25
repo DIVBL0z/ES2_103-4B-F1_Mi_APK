@@ -9,4 +9,11 @@
         <!-- Opción para idioma Inglés -->
         <item>Inglés</item>
     </string-array>
+
+    <!-- Arreglo de roles de usuario disponibles -->
+    <string-array name="roles">
+        <item>Usuario</item>
+        <item>Técnico</item>
+        <item>Administrador</item>
+    </string-array>
 </resources>

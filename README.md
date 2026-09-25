@@ -6,6 +6,43 @@ Aplicación móvil nativa para Android desarrollada en **Kotlin** con **Android 
 
 ## 📅 Registro de Actividades y Cambios
 
+### Fecha: 24 de septiembre de 2026
+
+#### 1. Integración de Firebase y Firebase Authentication
+* **Configuración del Proyecto y Registro de Aplicación:**
+  * Vinculación del proyecto de Firebase `iot-24-09-2026` mediante Firebase CLI.
+  * Registro de la aplicación Android nativa con package name `com.example.firstapp` y App ID `1:172550727760:android:cef1ddbcb3ceeb0974c955`.
+  * Generación y ubicación del archivo de configuración `app/google-services.json`.
+  * Creación y despliegue de la configuración backend de autenticación en `firebase.json` activando el proveedor `emailPassword`.
+
+#### 2. Configuración de Build y Dependencias Gradle
+* **Catálogo de Versiones (`gradle/libs.versions.toml`):**
+  * Plugin de Google Services: `com.google.gms.google-services` (v4.4.2).
+  * Firebase Bill of Materials: `firebase-bom` (v33.10.0).
+  * Librería de autenticación: `firebase-auth`.
+* **Configuración de Gradle Scripts:**
+  * Aplicación del plugin de Google Services en `build.gradle.kts` (raíz) y `app/build.gradle.kts`.
+  * Inclusión de `platform(libs.firebase.bom)` e implementación de `libs.firebase.auth` en el módulo `:app`.
+* **Permisos del Sistema (`AndroidManifest.xml`):**
+  * Inclusión del permiso `android.permission.INTERNET` para permitir la comunicación segura con los servidores de Firebase Auth.
+
+#### 3. Integración de Cloud Firestore y Creación de Perfiles de Usuario (Vía 1)
+* **Aprovisionamiento de Cloud Firestore:**
+  * Creación y despliegue de la base de datos `(default)` en el proyecto `iot-24-09-2026`.
+  * Adición de la dependencia `firebase-firestore` mediante Version Catalogs en `gradle/libs.versions.toml` y `app/build.gradle.kts`.
+  * Despliegue de reglas de seguridad estrictas en `firestore.rules` (validación de esquema, propiedad de datos `isOwner(userId)`, tipado y roles).
+* **Modelo de Datos de Usuario (`Usuario.kt`):**
+  * Representación estructurada del perfil en Firestore: `uid`, `correo`, `nombreCompleto`, `rut`, `telefono`, `rol` (*"usuario"*, *"tecnico"*, *"administrador"*), `fechaRegistro`, `activo` y `preferencias`.
+* **Pantalla Dedicada de Registro (`RegistroActivity.kt` y `activity_registro.xml`):**
+  * Formulario completo con validaciones: Nombre completo, RUT, Teléfono, Selector de Rol (`Spinner` con `@array/roles`), Correo electrónico, Contraseña y Confirmación de Contraseña.
+  * Flujo transaccional dual: Crea el usuario en Firebase Authentication (`createUserWithEmailAndPassword`) y almacena el documento del perfil en `/usuarios/{uid}` en Cloud Firestore.
+  * Declarada en `AndroidManifest.xml` y enlazada al botón *"Registrarse con Firebase"* de `MainActivity`.
+* **Sincronización de Perfil y Preferencias:**
+  * **Pantalla de Bienvenida (`BienvenidaActivity.kt` / `activity_bienvenida.xml`):** Consulta `/usuarios/{uid}` en Firestore para mostrar el nombre real del usuario, su rol asignado, correo y datos de contacto en tiempo real.
+  * **Pantalla de Preferencias (`PreferenciasActivity.kt`):** Carga las preferencias del usuario desde Firestore y guarda los cambios (notificaciones, idioma, unidad de temperatura) directamente en la nube.
+
+---
+
 ### Fecha: 3 de septiembre de 2026
 
 #### 1. Mejoras en la Pantalla de Login (`MainActivity.kt` y `activity_main.xml`)
@@ -107,3 +144,5 @@ Se diseñó la pantalla de inicio de sesión utilizando `ConstraintLayout`:
   * AndroidX AppCompat
   * AndroidX ConstraintLayout
   * Google Material Components 3
+  * Firebase Android BoM & Firebase Authentication (Email/Password)
+  * Google Play Services Plugin (Google Services Gradle Plugin)

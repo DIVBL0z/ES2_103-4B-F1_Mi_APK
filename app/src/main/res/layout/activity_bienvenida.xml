@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Contenedor principal de la pantalla de bienvenida con ConstraintLayout -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,23 +7,97 @@
     android:layout_height="match_parent"
     tools:context=".BienvenidaActivity">
 
-    <!-- Mensaje de bienvenida centrado en la pantalla -->
-    <TextView
-        android:id="@+id/tvBienvenida"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="24dp"
-        android:text="¡Bienvenido!"
-        android:textAlignment="center"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/btnPreferencias"
+    <!-- Icono institucional o de usuario -->
+    <ImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_marginTop="48dp"
+        android:contentDescription="@null"
+        android:src="@drawable/logo_inacap"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Mensaje de bienvenida centrado -->
+    <TextView
+        android:id="@+id/tvBienvenida"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:text="¡Bienvenido!"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivAvatar" />
+
+    <!-- Rol del usuario desde Firestore -->
+    <TextView
+        android:id="@+id/tvRol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:drawable/dialog_holo_light_frame"
+        android:paddingStart="12dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="4dp"
+        android:text="Rol: Cargando..."
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="14sp"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvBienvenida" />
+
+    <!-- Correo del usuario -->
+    <TextView
+        android:id="@+id/tvCorreo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:text="Correo: -"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvRol" />
+
+    <!-- Datos adicionales del perfil (RUT y Teléfono) -->
+    <TextView
+        android:id="@+id/tvDetallePerfil"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@android:color/darker_gray"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvCorreo" />
+
+    <!-- Indicador de carga para la consulta de Firestore -->
+    <ProgressBar
+        android:id="@+id/pbCargandoPerfil"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvDetallePerfil" />
 
     <!-- Botón para acceder a la pantalla de preferencias del usuario -->
     <Button
@@ -32,13 +105,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="28dp"
         android:layout_marginEnd="32dp"
         android:onClick="onPreferenciasClick"
-        android:text="Preferencias"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Preferencias de Usuario"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvBienvenida" />
+        app:layout_constraintTop_toBottomOf="@+id/pbCargandoPerfil" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

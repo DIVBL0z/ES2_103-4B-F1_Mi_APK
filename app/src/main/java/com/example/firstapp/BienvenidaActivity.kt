@@ -1,63 +1,118 @@
 package com.example.firstapp
 
-// Importación para crear intenciones de navegación entre actividades
+// Importaciones para crear intenciones de navegación y ciclo de vida
 import android.content.Intent
-// Importación para el manejo del estado guardado de la actividad
 import android.os.Bundle
-// Importación de la clase View necesaria para el método onPreferenciasClick(view: View)
 import android.view.View
-// Importación del componente TextView para mostrar el saludo de bienvenida
+import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
-// Importación para habilitar el diseño de pantalla completa borde a borde
+// Importaciones de compatibilidad y diseño
 import androidx.activity.enableEdgeToEdge
-// Importación de la clase base compatible AppCompatActivity
 import androidx.appcompat.app.AppCompatActivity
-// Importación de utilidades para compatibilidad de vistas
 import androidx.core.view.ViewCompat
-// Importación para gestionar las barras del sistema (insets)
 import androidx.core.view.WindowInsetsCompat
+// Importaciones de Firebase Auth y Cloud Firestore
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-// Definición de la clase BienvenidaActivity que hereda de AppCompatActivity
+/**
+ * Pantalla de bienvenida que consulta el perfil del usuario autenticado en Cloud Firestore
+ * y muestra su nombre real, correo, rol y datos de contacto de manera sincronizada.
+ */
 class BienvenidaActivity : AppCompatActivity() {
 
-    // Variable a nivel de clase para almacenar el usuario recibido
-    private var usuario: String = ""
+    // Vistas de la interfaz
+    private lateinit var tvBienvenida: TextView
+    private lateinit var tvRol: TextView
+    private lateinit var tvCorreo: TextView
+    private lateinit var tvDetallePerfil: TextView
+    private lateinit var pbCargandoPerfil: ProgressBar
+    private lateinit var btnPreferencias: Button
 
-    // Método del ciclo de vida que se ejecuta al crearse la actividad
+    // Variables de estado
+    private var usuarioExtra: String = ""
+    private var nombreMostrar: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Llama al método onCreate de la clase padre
         super.onCreate(savedInstanceState)
-        // Habilita la visualización de borde a borde en la pantalla
         enableEdgeToEdge()
-        // Asocia el archivo de diseño activity_bienvenida.xml con esta actividad
         setContentView(R.layout.activity_bienvenida)
 
         // Configura el ajuste de márgenes según las barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainBienvenida)) { v, insets ->
-            // Obtiene las dimensiones de las barras del sistema
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Aplica el relleno para no solapar la interfaz con las barras del sistema
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            // Retorna las inserciones procesadas
             insets
         }
 
-        // Obtiene el dato del usuario enviado desde MainActivity mediante el Intent
-        usuario = intent.getStringExtra("EXTRA_USUARIO") ?: "Usuario"
+        // Obtiene el identificador básico enviado por el Intent
+        usuarioExtra = intent.getStringExtra("EXTRA_USUARIO") ?: "Usuario"
 
-        // Obtiene la referencia del TextView centrado para la bienvenida
-        val tvBienvenida = findViewById<TextView>(R.id.tvBienvenida)
-        // Establece el mensaje de bienvenida con el nombre de usuario
-        tvBienvenida.text = "¡Bienvenido,\n$usuario!"
+        // Vinculación de vistas
+        tvBienvenida = findViewById(R.id.tvBienvenida)
+        tvRol = findViewById(R.id.tvRol)
+        tvCorreo = findViewById(R.id.tvCorreo)
+        tvDetallePerfil = findViewById(R.id.tvDetallePerfil)
+        pbCargandoPerfil = findViewById(R.id.pbCargandoPerfil)
+        btnPreferencias = findViewById(R.id.btnPreferencias)
+
+        // Valores iniciales mientras carga Firestore
+        tvBienvenida.text = "¡Bienvenido,\n$usuarioExtra!"
+        tvCorreo.text = "Correo: $usuarioExtra"
+
+        // Carga los datos del perfil desde Cloud Firestore
+        cargarPerfilFirestore()
     }
 
-    // Método vinculado al atributo android:onClick="onPreferenciasClick" del botón Preferencias
+    /**
+     * Consulta el documento /usuarios/{uid} en Cloud Firestore para obtener el perfil completo.
+     */
+    private fun cargarPerfilFirestore() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            tvRol.text = "Rol: Usuario"
+            return
+        }
+
+        pbCargandoPerfil.visibility = View.VISIBLE
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("usuarios").document(currentUser.uid).get()
+            .addOnSuccessListener { doc ->
+                pbCargandoPerfil.visibility = View.GONE
+                if (doc != null && doc.exists()) {
+                    val nombre = doc.getString("nombreCompleto") ?: usuarioExtra
+                    val rol = doc.getString("rol") ?: "usuario"
+                    val correo = doc.getString("correo") ?: currentUser.email ?: usuarioExtra
+                    val rut = doc.getString("rut") ?: ""
+                    val telefono = doc.getString("telefono") ?: ""
+
+                    nombreMostrar = nombre
+                    tvBienvenida.text = "¡Bienvenido,\n$nombre!"
+                    tvRol.text = "Rol: ${rol.replaceFirstChar { it.uppercase() }}"
+                    tvCorreo.text = "Correo: $correo"
+
+                    val detalles = mutableListOf<String>()
+                    if (rut.isNotEmpty()) detalles.add("RUT: $rut")
+                    if (telefono.isNotEmpty()) detalles.add("Tel: $telefono")
+                    tvDetallePerfil.text = detalles.joinToString("  |  ")
+                } else {
+                    tvRol.text = "Rol: Usuario"
+                }
+            }
+            .addOnFailureListener {
+                pbCargandoPerfil.visibility = View.GONE
+                tvRol.text = "Rol: Usuario (Modo local)"
+            }
+    }
+
+    /**
+     * Abre la pantalla de preferencias pasando el nombre o correo del usuario.
+     */
     fun onPreferenciasClick(view: View) {
-        // Crea un Intent explícito para navegar hacia PreferenciasActivity
         val intent = Intent(this, PreferenciasActivity::class.java)
-        // Pasa el usuario recibido como dato extra al nuevo Intent
-        intent.putExtra("EXTRA_USUARIO", usuario)
-        // Inicia la actividad PreferenciasActivity
+        intent.putExtra("EXTRA_USUARIO", if (nombreMostrar.isNotEmpty()) nombreMostrar else usuarioExtra)
         startActivity(intent)
     }
 }
