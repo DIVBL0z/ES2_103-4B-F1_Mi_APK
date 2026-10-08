@@ -87,6 +87,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvCorreo" />
 
+    <!-- Descripción del servicio que ofrece el proyecto -->
+    <TextView
+        android:id="@+id/tvServicio"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:text="ServerTemp monitorea la temperatura de las salas de servidores en tiempo real y te avisa cuando una lectura sale del rango seguro (18 °C a 30 °C)."
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvDetallePerfil" />
+
     <!-- Indicador de carga para la consulta de Firestore -->
     <ProgressBar
         android:id="@+id/pbCargandoPerfil"
@@ -97,19 +113,20 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvDetallePerfil" />
-
+        app:layout_constraintTop_toBottomOf="@+id/tvServicio" />
     <!-- Botón para acceder a la pantalla de preferencias del usuario -->
+
     <Button
         android:id="@+id/btnPreferencias"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="48dp"
         android:layout_marginEnd="32dp"
         android:onClick="onPreferenciasClick"
         android:text="Preferencias de Usuario"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pbCargandoPerfil" />
 
@@ -118,7 +135,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="96dp"
+        android:layout_marginTop="124dp"
         android:layout_marginEnd="32dp"
         android:onClick="onRegistrosClick"
         android:text="Ver registros de temperatura"

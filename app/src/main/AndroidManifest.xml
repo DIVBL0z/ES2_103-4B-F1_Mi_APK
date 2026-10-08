@@ -43,11 +43,6 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".views.RegistroActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
             android:name=".views.ListaActivity"
             android:exported="false" />
 
