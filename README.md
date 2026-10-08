@@ -6,6 +6,32 @@ Aplicación móvil nativa para Android desarrollada en **Kotlin** con **Android 
 
 ## 📅 Registro de Actividades y Cambios
 
+### Fecha: 8 de octubre de 2026
+
+#### 1. Organización del código en paquetes
+- El código Kotlin se reorganizó en los paquetes `models`, `views`, `adapters` y `utils`.
+- Las pantallas existentes (`MainActivity`, `RegistroActivity`, `BienvenidaActivity`, `PreferenciasActivity`) pasaron a `views` y `Usuario` a `models`; el `AndroidManifest.xml` se actualizó con las nuevas rutas.
+
+#### 2. CRUD de registros de temperatura de servidores
+- **Modelo (`models/RegistroTemperatura.kt`):** `ubicacion` (texto), `temperatura` (numérico, °C) y `hora` (texto), con el id anotado con `@DocumentId`.
+- **Colección de Firestore:** `registros_temperatura`.
+- **Lectura en tiempo real (`views/ListaActivity.kt` y `adapters/RegistroAdapter.kt`):** la lista se actualiza sola mediante `addSnapshotListener`, que se activa en `onStart` y se libera en `onStop`. Cada fila muestra *Sala*, *Temperatura (°C)* y *Hora del registro*.
+- **Crear y editar (`views/FormularioActivity.kt`):** un mismo formulario sirve para ambos casos. Valida que ningún campo esté vacío y que la temperatura sea un número antes de enviar nada a Firebase, mostrando el error con `.error`. Al editar se actualiza el mismo documento (mismo id).
+- **Eliminar:** botón en cada fila con diálogo de confirmación.
+- **Navegación:** nuevo botón *"Ver registros de temperatura"* en la pantalla de Bienvenida.
+- **Dependencia nueva:** `androidx.recyclerview:recyclerview`.
+- **Reglas (`firestore.rules`):** se agregó el bloque de `registros_temperatura` (lectura y escritura solo para usuarios autenticados).
+
+#### 3. Alertas de temperatura
+- **`utils/NotificadorTemperatura.kt`:** al guardar o editar un registro, se dispara una notificación si la temperatura supera el máximo (30 °C) o está bajo el mínimo (18 °C). Cada sala usa su propio id de notificación, así una alerta nueva reemplaza a la anterior de esa sala.
+- Canal de notificaciones `alertas_temperatura` (Android 8+) y permiso `POST_NOTIFICATIONS`, que se solicita al abrir la lista (Android 13+).
+- Al tocar la notificación se abre la lista de registros.
+
+#### 4. Preferencias del negocio
+- **Switch:** *"Recibir alertas de temperatura"*. Si está apagado, no se muestra ninguna notificación.
+- **Spinner:** sala o ubicación monitoreada (Sala servidores 1, Sala servidores 2, Rack principal, UPS, Sala de red).
+- Las preferencias se guardan en Firestore, en `/usuarios/{uid}/preferencias` (`notificaciones`, `salaMonitoreada`, `unidadTemperatura`), y el estado de las alertas también se guarda localmente (`SharedPreferences`, clave `alertas_activas`) para que el notificador lo lea al instante.
+
 ### Fecha: 24 de septiembre de 2026
 
 #### 1. Integración de Firebase y Firebase Authentication
@@ -146,3 +172,5 @@ Se diseñó la pantalla de inicio de sesión utilizando `ConstraintLayout`:
   * Google Material Components 3
   * Firebase Android BoM & Firebase Authentication (Email/Password)
   * Google Play Services Plugin (Google Services Gradle Plugin)
+  * Cloud Firestore (base de datos en tiempo real)
+  * AndroidX RecyclerView
