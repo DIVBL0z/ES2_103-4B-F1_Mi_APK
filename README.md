@@ -172,3 +172,5 @@ Se diseñó la pantalla de inicio de sesión utilizando `ConstraintLayout`:
   * Google Material Components 3
   * Firebase Android BoM & Firebase Authentication (Email/Password)
   * Google Play Services Plugin (Google Services Gradle Plugin)
+  * Cloud Firestore (base de datos en tiempo real)
+  * AndroidX RecyclerView
