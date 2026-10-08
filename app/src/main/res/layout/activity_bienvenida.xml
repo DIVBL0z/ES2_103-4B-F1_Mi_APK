@@ -5,7 +5,7 @@
     android:id="@+id/mainBienvenida"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BienvenidaActivity">
+    tools:context=".views.BienvenidaActivity">
 
     <!-- Icono institucional o de usuario -->
     <ImageView
@@ -112,5 +112,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pbCargandoPerfil" />
+
+    <Button
+        android:id="@+id/btnRegistros"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="96dp"
+        android:layout_marginEnd="32dp"
+        android:onClick="onRegistrosClick"
+        android:text="Ver registros de temperatura"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pbCargandoPerfil" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

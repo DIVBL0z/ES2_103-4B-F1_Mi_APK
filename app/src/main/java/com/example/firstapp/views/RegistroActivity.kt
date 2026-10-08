@@ -1,4 +1,4 @@
-package com.example.firstapp
+package com.example.firstapp.views
 
 // Importaciones para navegación y ciclo de vida de actividades
 import android.content.Intent
@@ -15,6 +15,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.firstapp.R
+import com.example.firstapp.models.Usuario
 // Importaciones de Firebase Authentication y Cloud Firestore
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth

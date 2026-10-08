@@ -1,4 +1,4 @@
-package com.example.firstapp
+package com.example.firstapp.views
 
 // Importaciones para navegación y ciclo de vida de actividades
 import android.content.Intent
@@ -17,21 +17,25 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.firstapp.R
 // Importaciones de Firebase Auth y Cloud Firestore
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 /**
- * Pantalla de configuración y preferencias del usuario.
- * Sincroniza las preferencias del usuario (notificaciones, idioma, unidad de temperatura)
- * bidireccionalmente con su documento en Cloud Firestore (/usuarios/{uid}).
+ * Pantalla de preferencias del negocio.
+ * - Switch: activa o desactiva las alertas de temperatura.
+ * - Spinner: sala o ubicación que se monitorea.
+ * - Radio: unidad de temperatura.
+ * Se sincroniza con /usuarios/{uid} en Firestore y, además, el estado de las alertas
+ * se guarda localmente para que el notificador lo lea al instante.
  */
 class PreferenciasActivity : AppCompatActivity() {
 
     // Vistas de la interfaz
     private lateinit var tvUsuarioPreferencias: TextView
     private lateinit var swNotificaciones: Switch
-    private lateinit var spIdioma: Spinner
+    private lateinit var spSala: Spinner
     private lateinit var rgUnidad: RadioGroup
     private lateinit var pbGuardando: ProgressBar
     private lateinit var btnGuardarPreferencia: Button
@@ -55,12 +59,16 @@ class PreferenciasActivity : AppCompatActivity() {
         tvUsuarioPreferencias.text = "Configuración para: $usuario"
 
         swNotificaciones = findViewById(R.id.swNotificaciones)
-        spIdioma = findViewById(R.id.spIdioma)
+        spSala = findViewById(R.id.spSala)
         rgUnidad = findViewById(R.id.rgUnidad)
         pbGuardando = findViewById(R.id.pbGuardando)
         btnGuardarPreferencia = findViewById(R.id.btnGuardarPreferencia)
         btnVolver = findViewById(R.id.btnVolver)
         btnCerrarSesion = findViewById(R.id.btnCerrarSesion)
+
+        // Muestra primero el estado local de las alertas (sin esperar a la red)
+        swNotificaciones.isChecked = getSharedPreferences("IoT_Prefs", MODE_PRIVATE)
+            .getBoolean("alertas_activas", true)
 
         btnVolver.setOnClickListener {
             finish()
@@ -83,11 +91,14 @@ class PreferenciasActivity : AppCompatActivity() {
                     @Suppress("UNCHECKED_CAST")
                     val prefs = doc.get("preferencias") as? Map<String, Any>
                     if (prefs != null) {
-                        val notif = prefs["notificaciones"] as? Boolean ?: true
-                        val idioma = prefs["idioma"] as? String ?: "Español"
+                        val alertas = prefs["notificaciones"] as? Boolean ?: true
+                        val sala = prefs["salaMonitoreada"] as? String
                         val unidad = prefs["unidadTemperatura"] as? String ?: "Celsius"
 
-                        swNotificaciones.isChecked = notif
+                        swNotificaciones.isChecked = alertas
+                        // Deja el estado local igual al de la nube
+                        getSharedPreferences("IoT_Prefs", MODE_PRIVATE).edit()
+                            .putBoolean("alertas_activas", alertas).apply()
 
                         if (unidad.equals("Fahrenheit", ignoreCase = true)) {
                             findViewById<RadioButton>(R.id.rbFahrenheit)?.isChecked = true
@@ -95,11 +106,14 @@ class PreferenciasActivity : AppCompatActivity() {
                             findViewById<RadioButton>(R.id.rbCelsius)?.isChecked = true
                         }
 
-                        val adapter = spIdioma.adapter
-                        for (i in 0 until adapter.count) {
-                            if (adapter.getItem(i).toString().equals(idioma, ignoreCase = true)) {
-                                spIdioma.setSelection(i)
-                                break
+                        // Selecciona en el Spinner la sala guardada
+                        if (sala != null) {
+                            val adapter = spSala.adapter
+                            for (i in 0 until adapter.count) {
+                                if (adapter.getItem(i).toString().equals(sala, ignoreCase = true)) {
+                                    spSala.setSelection(i)
+                                    break
+                                }
                             }
                         }
                     }
@@ -114,15 +128,19 @@ class PreferenciasActivity : AppCompatActivity() {
         pbGuardando.visibility = View.VISIBLE
         btnGuardarPreferencia.isEnabled = false
 
-        val notificaciones = swNotificaciones.isChecked
-        val idioma = spIdioma.selectedItem?.toString() ?: "Español"
+        val alertas = swNotificaciones.isChecked
+        val sala = spSala.selectedItem?.toString() ?: ""
         val idSeleccionado = rgUnidad.checkedRadioButtonId
         val rbSeleccionado = findViewById<RadioButton>(idSeleccionado)
         val unidad = rbSeleccionado?.text?.toString() ?: "Celsius"
 
+        // Guarda el estado de las alertas en local: el notificador lo lee desde aquí
+        getSharedPreferences("IoT_Prefs", MODE_PRIVATE).edit()
+            .putBoolean("alertas_activas", alertas).apply()
+
         val prefsMap = mapOf(
-            "notificaciones" to notificaciones,
-            "idioma" to idioma,
+            "notificaciones" to alertas,
+            "salaMonitoreada" to sala,
             "unidadTemperatura" to unidad
         )
 
@@ -134,9 +152,10 @@ class PreferenciasActivity : AppCompatActivity() {
                 .addOnSuccessListener {
                     pbGuardando.visibility = View.GONE
                     btnGuardarPreferencia.isEnabled = true
+                    val estado = if (alertas) "alertas activadas" else "alertas desactivadas"
                     Toast.makeText(
                         this,
-                        "Preferencias guardadas en la nube ($unidad, $idioma)",
+                        "Preferencias guardadas ($estado, $sala, $unidad)",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -152,7 +171,7 @@ class PreferenciasActivity : AppCompatActivity() {
         } else {
             pbGuardando.visibility = View.GONE
             btnGuardarPreferencia.isEnabled = true
-            Toast.makeText(this, "Unidad guardada localmente: $unidad", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Preferencias guardadas localmente", Toast.LENGTH_SHORT).show()
         }
     }
 

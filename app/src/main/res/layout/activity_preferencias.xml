@@ -6,7 +6,7 @@
     android:id="@+id/mainPreferencias"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PreferenciasActivity">
+    tools:context=".views.PreferenciasActivity">
 
     <!-- 1. Título principal de la pantalla de preferencias -->
     <TextView
@@ -51,16 +51,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:text="Recibir notificaciones" />
+            android:text="Recibir alertas de temperatura" />
 
-        <!-- 5. Selector desplegable (Spinner) para configurar el idioma de la aplicación -->
-        <Spinner
-            android:id="@+id/spIdioma"
+
+        <!-- 5. Sala o ubicación que se monitorea -->
+        <TextView
+            android:id="@+id/tvLabelSala"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:entries="@array/idiomas"
+            android:text="Sala o ubicación monitoreada" />
+
+        <Spinner
+            android:id="@+id/spSala"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:entries="@array/salas"
             android:minHeight="48dp" />
+
+
 
         <!-- 6. Grupo de botones de radio para seleccionar la unidad de temperatura -->
         <RadioGroup

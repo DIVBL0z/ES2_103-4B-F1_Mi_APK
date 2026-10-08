@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
 
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
     // Firebase BoM, Authentication and Cloud Firestore
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)

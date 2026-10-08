@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permiso necesario para la comunicación con los servidores de Firebase Authentication -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FirstApp">
         <activity
-            android:name=".MainActivity"
+            android:name=".views.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -27,19 +28,34 @@
 
         <!-- Declaración de la pantalla de bienvenida BienvenidaActivity -->
         <activity
-            android:name=".BienvenidaActivity"
+            android:name=".views.BienvenidaActivity"
             android:exported="false" />
 
         <!-- Declaración de la pantalla de preferencias PreferenciasActivity -->
         <activity
-            android:name=".PreferenciasActivity"
+            android:name=".views.PreferenciasActivity"
             android:exported="false" />
 
         <!-- Declaración de la pantalla de registro y creación de perfil RegistroActivity -->
         <activity
-            android:name=".RegistroActivity"
+            android:name=".views.RegistroActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".views.RegistroActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".views.ListaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".views.FormularioActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

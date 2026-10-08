@@ -1,4 +1,4 @@
-package com.example.firstapp
+package com.example.firstapp.views
 
 // Importación para crear intenciones de navegación entre actividades
 import android.content.Intent
@@ -23,12 +23,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.firstapp.R
 // Importaciones del SDK oficial de Firebase Authentication
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 
 /**
  * Actividad principal de inicio de sesión y registro de usuarios,

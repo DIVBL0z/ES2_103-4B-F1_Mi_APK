@@ -2,12 +2,14 @@
     <!-- Nombre de la aplicación -->
     <string name="app_name">FirstApp</string>
 
-    <!-- Arreglo de cadenas que contiene los idiomas disponibles para la aplicación -->
-    <string-array name="idiomas">
-        <!-- Opción para idioma Español -->
-        <item>Español</item>
-        <!-- Opción para idioma Inglés -->
-        <item>Inglés</item>
+
+    <!-- selector de salas a notificar -->
+    <string-array name="salas">
+        <item>Sala servidores 1</item>
+        <item>Sala servidores 2</item>
+        <item>Rack principal</item>
+        <item>UPS</item>
+        <item>Sala de red</item>
     </string-array>
 
     <!-- Arreglo de roles de usuario disponibles -->

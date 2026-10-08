@@ -1,4 +1,4 @@
-package com.example.firstapp
+package com.example.firstapp.views
 
 // Importaciones para crear intenciones de navegación y ciclo de vida
 import android.content.Intent
@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.firstapp.R
 // Importaciones de Firebase Auth y Cloud Firestore
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -114,5 +115,14 @@ class BienvenidaActivity : AppCompatActivity() {
         val intent = Intent(this, PreferenciasActivity::class.java)
         intent.putExtra("EXTRA_USUARIO", if (nombreMostrar.isNotEmpty()) nombreMostrar else usuarioExtra)
         startActivity(intent)
+
+    }
+
+    /**
+     * Abre los registros de temperatura
+     */
+
+    fun onRegistrosClick(view: View) {
+        startActivity(Intent(this, ListaActivity::class.java))
     }
 }
